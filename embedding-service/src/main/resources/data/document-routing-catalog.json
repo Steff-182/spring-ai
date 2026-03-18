@@ -1,0 +1,216 @@
+{
+  "funds": [
+    {
+      "code": "ACC",
+      "label": "Accueil et entree en relation",
+      "description": "Fonds documentaire pour l'ouverture de relation, la collecte KYC et les justificatifs clients de base.",
+      "routingPolicy": "Prioriser ce fonds pour l'identite, les justificatifs de domicile et les pieces standards de connaissance client.",
+      "documentCount": 18450231,
+      "averagePages": 2,
+      "typologies": ["T000101", "T000102", "T000103"]
+    },
+    {
+      "code": "CREDIMMO",
+      "label": "Octroi de credit immobilier",
+      "description": "Fonds documentaire pour le montage, l'analyse et la contractualisation des dossiers de credit immobilier.",
+      "routingPolicy": "Prioriser ce fonds des qu'un acte, un compromis, une offre de pret ou un justificatif fiscal est rattache au financement immobilier.",
+      "documentCount": 9623456,
+      "averagePages": 12,
+      "typologies": ["T004168", "T004169", "T004170", "T004171"]
+    },
+    {
+      "code": "PPI",
+      "label": "Prets professionnels et investissements",
+      "description": "Fonds pour les dossiers de financement professionnel, pieces fournisseurs et contrats d'investissement.",
+      "routingPolicy": "Utiliser ce fonds pour les factures travaux, contrats fournisseurs et pieces justificatives d'investissements professionnels.",
+      "documentCount": 3412789,
+      "averagePages": 6,
+      "typologies": ["T005201", "T005202", "T005203", "T005204"]
+    },
+    {
+      "code": "SUCC",
+      "label": "Successions",
+      "description": "Fonds documentaire pour le traitement des successions, actes notaries et pieces de deces.",
+      "routingPolicy": "Utiliser ce fonds pour tout document relatif a un deces, un notaire, une succession ou une attestation hereditaire.",
+      "documentCount": 1267845,
+      "averagePages": 8,
+      "typologies": ["T006301", "T006302"]
+    },
+    {
+      "code": "SINISTRE",
+      "label": "Sinistres et assurance emprunteur",
+      "description": "Fonds documentaire pour les declarations de sinistre, devis, constats et pieces d'indemnisation.",
+      "routingPolicy": "Utiliser ce fonds pour tout document lie a un sinistre, des degats, un devis ou une indemnisation assurance.",
+      "documentCount": 4789902,
+      "averagePages": 5,
+      "typologies": ["T007401", "T007402"]
+    }
+  ],
+  "typologies": [
+    {
+      "code": "T000101",
+      "label": "Piece d'identite client",
+      "fundCode": "ACC",
+      "documentType": "AUTRE",
+      "description": "Carte nationale d'identite ou passeport utilise pour l'entree en relation.",
+      "keywords": ["carte nationale d'identite", "republique francaise", "date de naissance", "nationalite", "passeport"],
+      "tokenStrategy": "Premiere face, seconde face, MRZ et zone nom/prenom suffisent generalement.",
+      "documentCount": 8023456,
+      "averagePages": 2
+    },
+    {
+      "code": "T000102",
+      "label": "Justificatif de domicile",
+      "fundCode": "ACC",
+      "documentType": "FACTURE",
+      "description": "Facture ou avis recents servant de justificatif de domicile pour l'onboarding client.",
+      "keywords": ["facture", "adresse", "echeance", "consommation", "electricite"],
+      "tokenStrategy": "Conserver le bandeau client, l'adresse et la date. Inutile d'envoyer l'integralite des pages explicatives.",
+      "documentCount": 6210450,
+      "averagePages": 2
+    },
+    {
+      "code": "T000103",
+      "label": "Avis d'imposition KYC",
+      "fundCode": "ACC",
+      "documentType": "AVIS_IMPOSITION",
+      "description": "Avis d'imposition exploite pour la connaissance client hors credit immobilier.",
+      "keywords": ["avis d'impot", "revenu fiscal de reference", "direction generale des finances publiques"],
+      "tokenStrategy": "Garder la page avec le revenu fiscal, le foyer et l'annee de reference.",
+      "documentCount": 4210034,
+      "averagePages": 4
+    },
+    {
+      "code": "T004168",
+      "label": "Compromis de vente immobilier",
+      "fundCode": "CREDIMMO",
+      "documentType": "CONTRAT",
+      "description": "Compromis ou promesse synallagmatique de vente dans un dossier de credit immobilier.",
+      "keywords": ["compromis de vente", "vendeur", "acquereur", "notaire", "designation du bien", "prix de vente"],
+      "tokenStrategy": "Premiere page, pages parties/prix, conditions suspensives et signatures. Pas besoin du tout-venant annexe au premier passage.",
+      "documentCount": 1245200,
+      "averagePages": 18
+    },
+    {
+      "code": "T004169",
+      "label": "Offre de pret immobilier signee",
+      "fundCode": "CREDIMMO",
+      "documentType": "CONTRAT",
+      "description": "Offre de pret acceptee et signee par les emprunteurs.",
+      "keywords": ["offre de pret", "taeg", "emprunteur", "capital emprunte", "tableau d'amortissement"],
+      "tokenStrategy": "Garder resume financier, parties, montant, TAEG et pages de signatures.",
+      "documentCount": 1123400,
+      "averagePages": 14
+    },
+    {
+      "code": "T004170",
+      "label": "Avis d'imposition emprunteur immobilier",
+      "fundCode": "CREDIMMO",
+      "documentType": "AVIS_IMPOSITION",
+      "description": "Avis d'imposition fourni dans un dossier d'octroi de credit immobilier.",
+      "keywords": ["avis d'impot", "revenu fiscal de reference", "situation du foyer", "impot sur le revenu"],
+      "tokenStrategy": "Ne garder que la page comportant le revenu fiscal, le numero fiscal et le foyer.",
+      "documentCount": 2200450,
+      "averagePages": 4
+    },
+    {
+      "code": "T004171",
+      "label": "Tableau d'amortissement",
+      "fundCode": "CREDIMMO",
+      "documentType": "AUTRE",
+      "description": "Tableau detaille des echeances de remboursement d'un credit immobilier.",
+      "keywords": ["tableau d'amortissement", "echeance", "capital restant du", "interets"],
+      "tokenStrategy": "Une a deux pages representant le debut et la fin du tableau suffisent pour la qualification.",
+      "documentCount": 1678920,
+      "averagePages": 6
+    },
+    {
+      "code": "T005201",
+      "label": "Facture travaux professionnel",
+      "fundCode": "PPI",
+      "documentType": "FACTURE",
+      "description": "Facture fournisseur rattachee a un financement professionnel ou a un investissement.",
+      "keywords": ["facture", "ht", "ttc", "siret", "travaux", "bon pour accord"],
+      "tokenStrategy": "Conserver la premiere page avec fournisseur, montant, reference et date d'emission.",
+      "documentCount": 980230,
+      "averagePages": 3
+    },
+    {
+      "code": "T005202",
+      "label": "Contrat fournisseur investissement",
+      "fundCode": "PPI",
+      "documentType": "CONTRAT",
+      "description": "Contrat ou bon de commande engageant un investissement professionnel.",
+      "keywords": ["contrat", "fournisseur", "commande", "equipement", "maintenance", "engagement"],
+      "tokenStrategy": "Garder le preambule, l'objet, le montant et les signatures.",
+      "documentCount": 540120,
+      "averagePages": 9
+    },
+    {
+      "code": "T005203",
+      "label": "Devis travaux professionnel",
+      "fundCode": "PPI",
+      "documentType": "DEVIS",
+      "description": "Devis fournisseur utilise pour instruire un financement de travaux professionnels avant emission de facture.",
+      "keywords": ["devis", "validite du devis", "total ht", "total ttc", "acompte", "acceptation client"],
+      "tokenStrategy": "Prioriser l'entete fournisseur, la table de postes, les totaux HT/TTC et la mention de validite.",
+      "documentCount": 402180,
+      "averagePages": 3
+    },
+    {
+      "code": "T005204",
+      "label": "Facture fournisseur professionnel",
+      "fundCode": "PPI",
+      "documentType": "FACTURE",
+      "description": "Facture finale fournisseur servant de piece justificative de decaissement dans un dossier professionnel.",
+      "keywords": ["facture", "numero de facture", "date d'emission", "montant ttc", "siret", "conditions de paiement"],
+      "tokenStrategy": "Conserver numero de facture, emetteur, montant TTC, TVA et references dossier ; ignorer annexes legales longues.",
+      "documentCount": 510330,
+      "averagePages": 2
+    },
+    {
+      "code": "T006301",
+      "label": "Acte de deces",
+      "fundCode": "SUCC",
+      "documentType": "AUTRE",
+      "description": "Acte officiel de deces necessaire a l'ouverture d'un dossier succession.",
+      "keywords": ["acte de deces", "decede", "mairie", "date du deces"],
+      "tokenStrategy": "Une seule page suffit en general ; prioriser l'identite du defunt et la date.",
+      "documentCount": 340890,
+      "averagePages": 1
+    },
+    {
+      "code": "T006302",
+      "label": "Attestation notariee de succession",
+      "fundCode": "SUCC",
+      "documentType": "CONTRAT",
+      "description": "Attestation ou acte notarie precisant la devolution successorale.",
+      "keywords": ["notaire", "succession", "heritiers", "attestation", "devolution"],
+      "tokenStrategy": "Conserver parties, qualite des heritiers, references notariales et signatures.",
+      "documentCount": 215678,
+      "averagePages": 7
+    },
+    {
+      "code": "T007401",
+      "label": "Declaration de sinistre",
+      "fundCode": "SINISTRE",
+      "documentType": "AUTRE",
+      "description": "Declaration initiale de sinistre ou courrier de circonstance assurance.",
+      "keywords": ["declaration de sinistre", "degats", "date du sinistre", "assurance", "dommages"],
+      "tokenStrategy": "Garder le formulaire ou courrier principal avec date, nature du sinistre et references contrat.",
+      "documentCount": 890456,
+      "averagePages": 3
+    },
+    {
+      "code": "T007402",
+      "label": "Devis de reparation",
+      "fundCode": "SINISTRE",
+      "documentType": "DEVIS",
+      "description": "Devis ou estimation des reparations dans un dossier de sinistre.",
+      "keywords": ["devis", "reparation", "montant estimatif", "sinistre", "main d'oeuvre"],
+      "tokenStrategy": "Conserver les lignes de montant, l'identification du prestataire et le contexte sinistre ; ignorer les CGV longues au premier tri.",
+      "documentCount": 730450,
+      "averagePages": 4
+    }
+  ]
+}

@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring AI Document Pipeline</title>
+    <style>
+        :root {
+            --bg: #f1eee7;
+            --bg-accent: #e8dcc7;
+            --panel: rgba(255, 253, 249, 0.92);
+            --panel-strong: rgba(255, 255, 255, 0.98);
+            --line: rgba(88, 69, 51, 0.14);
+            --ink: #211b17;
+            --muted: #6b6257;
+            --accent: #8b3a1d;
+            --accent-2: #0b6e69;
+            --low: #b45309;
+            --medium: #b7791f;
+            --high: #166534;
+            --shadow: 0 18px 42px rgba(57, 42, 24, 0.10);
+            --shadow-soft: 0 10px 26px rgba(57, 42, 24, 0.06);
+            --radius: 20px;
+            --step-width: 282px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(139, 58, 29, 0.16), transparent 24%),
+                radial-gradient(circle at top right, rgba(11, 110, 105, 0.14), transparent 20%),
+                linear-gradient(180deg, #faf7f1 0%, var(--bg) 46%, #ebe4d6 100%);
+            font-family: "Bahnschrift", "Aptos", sans-serif;
+        }
+
+        body {
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        main {
+            width: 100%;
+            max-width: none;
+            margin: 0 auto;
+        }
+
+        .shell {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(250, 246, 239, 0.88));
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+        }
+
+        .hero {
+            display: grid;
+            gap: 12px;
+            padding: 20px 22px 16px;
+            border-bottom: 1px solid var(--line);
+            background:
+                linear-gradient(140deg, rgba(139, 58, 29, 0.11), rgba(11, 110, 105, 0.08)),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.2));
+        }
+
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        h1, h2, h3, h4, p {
+            margin: 0;
+        }
+
+        h1 {
+            font-size: clamp(1.9rem, 4vw, 3.1rem);
+            line-height: 0.92;
+            letter-spacing: -0.05em;
+            max-width: 760px;
+        }
+
+        .subtitle {
+            max-width: 820px;
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.4;
+        }
+
+        .hero-metrics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .hero-pill,
+        .tag,
+        .state-pill,
+        .chip {
+            border-radius: 999px;
+            padding: 7px 10px;
+            font-size: 0.75rem;
+            line-height: 1;
+            border: 1px solid transparent;
+        }
+
+        .hero-pill {
+            background: rgba(255, 255, 255, 0.78);
+            color: #654834;
+            border-color: rgba(88, 69, 51, 0.12);
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag {
+            background: rgba(11, 110, 105, 0.10);
+            color: #0c5d59;
+        }
+
+        .tag.warm {
+            background: rgba(139, 58, 29, 0.11);
+            color: #7f381e;
+        }
+
+        .toolbar {
+            padding: 14px 18px 12px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .toolbar-card {
+            display: grid;
+            gap: 12px;
+            padding: 14px;
+            background: var(--panel);
+            border: 1px solid rgba(88, 69, 51, 0.11);
+            border-radius: 18px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .toolbar-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.8fr 0.8fr 1.2fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        label {
+            display: grid;
+            gap: 5px;
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        input,
+        select,
+        button {
+            font: inherit;
+        }
+
+        input,
+        select {
+            width: 100%;
+            min-height: 42px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(88, 69, 51, 0.14);
+            background: var(--panel-strong);
+            color: var(--ink);
+            font-size: 0.9rem;
+        }
+
+        button {
+            min-height: 42px;
+            padding: 10px 16px;
+            border: 0;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--accent), #a95a31);
+            color: white;
+            cursor: pointer;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            box-shadow: 0 12px 24px rgba(139, 58, 29, 0.18);
+            font-size: 0.88rem;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .dropzone {
+            min-height: 72px;
+            padding: 12px;
+            border-radius: 16px;
+            border: 1.5px dashed rgba(11, 110, 105, 0.28);
+            background: linear-gradient(135deg, rgba(11, 110, 105, 0.08), rgba(255, 255, 255, 0.88));
+            display: grid;
+            align-content: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+        }
+
+        .dropzone:hover {
+            transform: translateY(-1px);
+        }
+
+        .dropzone.is-dragover {
+            border-color: rgba(11, 110, 105, 0.65);
+            background: linear-gradient(135deg, rgba(11, 110, 105, 0.14), rgba(255, 255, 255, 0.96));
+        }
+
+        .dropzone.is-disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .dropzone-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+
+        .dropzone-copy {
+            color: var(--muted);
+            font-size: 0.76rem;
+            line-height: 1.35;
+        }
+
+        .toolbar-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .state-pill {
+            background: rgba(33, 27, 23, 0.06);
+            color: #514840;
+            border-color: rgba(88, 69, 51, 0.12);
+        }
+
+        .state-running {
+            background: rgba(183, 121, 31, 0.12);
+            color: #9a650f;
+            border-color: rgba(183, 121, 31, 0.16);
+        }
+
+        .state-success {
+            background: rgba(22, 101, 52, 0.10);
+            color: #166534;
+            border-color: rgba(22, 101, 52, 0.14);
+        }
+
+        .state-error {
+            background: rgba(180, 83, 9, 0.12);
+            color: #a13b12;
+            border-color: rgba(180, 83, 9, 0.16);
+        }
+
+        .pipeline-shell {
+            padding: 8px 10px 14px;
+        }
+
+        .pipeline-scroll {
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .pipeline {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(250px, var(--step-width));
+            gap: 10px;
+            align-items: start;
+            min-width: max-content;
+            padding: 4px;
+        }
+
+        .step {
+            display: grid;
+            gap: 10px;
+            min-height: 100%;
+            padding: 12px;
+            background: var(--panel);
+            border: 1px solid rgba(88, 69, 51, 0.12);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+        }
+
+        .step::after {
+            content: "";
+            position: absolute;
+            top: 28px;
+            right: -8px;
+            width: 14px;
+            height: 2px;
+            background: rgba(88, 69, 51, 0.18);
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step.status-skipped {
+            opacity: 0.82;
+            background: rgba(247, 244, 239, 0.92);
+        }
+
+        .step-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 12px;
+        }
+
+        .step-index {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-grid;
+            place-items: center;
+            background: rgba(139, 58, 29, 0.10);
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 0.78rem;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-size: 0.95rem;
+            line-height: 1.1;
+            margin-bottom: 3px;
+        }
+
+        .step-copy {
+            color: var(--muted);
+            font-size: 0.78rem;
+            line-height: 1.35;
+        }
+
+        .chip {
+            border-color: rgba(88, 69, 51, 0.12);
+            background: rgba(255, 255, 255, 0.9);
+            color: #574a3c;
+            font-weight: 700;
+        }
+
+        .chip.low {
+            color: var(--low);
+            background: rgba(180, 83, 9, 0.10);
+            border-color: rgba(180, 83, 9, 0.18);
+        }
+
+        .chip.medium {
+            color: var(--medium);
+            background: rgba(183, 121, 31, 0.11);
+            border-color: rgba(183, 121, 31, 0.18);
+        }
+
+        .chip.high {
+            color: var(--high);
+            background: rgba(22, 101, 52, 0.10);
+            border-color: rgba(22, 101, 52, 0.18);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .metric {
+            padding: 9px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.84);
+            border: 1px solid rgba(88, 69, 51, 0.09);
+        }
+
+        .metric span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.68rem;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .metric strong {
+            display: block;
+            font-size: 0.86rem;
+            line-height: 1.2;
+        }
+
+        .summary {
+            padding: 10px 11px;
+            border-radius: 14px;
+            background: rgba(42, 33, 25, 0.04);
+            color: #5f564c;
+            border: 1px solid rgba(88, 69, 51, 0.08);
+            min-height: 58px;
+            line-height: 1.35;
+            font-size: 0.78rem;
+        }
+
+        pre {
+            margin: 0;
+            padding: 11px;
+            border-radius: 15px;
+            background: #17191e;
+            color: #eef3f6;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            overflow: auto;
+            max-height: 240px;
+            font-size: 0.74rem;
+            line-height: 1.35;
+        }
+
+        .scroll-box {
+            max-height: 248px;
+            overflow: auto;
+            display: grid;
+            gap: 8px;
+        }
+
+        .page,
+        .candidate-row,
+        .decision-rule {
+            padding: 10px;
+            border-radius: 14px;
+            border: 1px solid rgba(88, 69, 51, 0.09);
+            background: rgba(255, 255, 255, 0.82);
+        }
+
+        .page h4,
+        .candidate-row h4,
+        .decision-rule h4 {
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+        }
+
+        .page p,
+        .candidate-row p,
+        .decision-rule p {
+            color: #5a5148;
+            line-height: 1.3;
+            font-size: 0.75rem;
+        }
+
+        .candidate-row.top3 {
+            border-color: rgba(11, 110, 105, 0.24);
+            box-shadow: inset 0 0 0 1px rgba(11, 110, 105, 0.08);
+        }
+
+        .candidate-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        .confidence-bar {
+            position: relative;
+            height: 14px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #b45309 0%, #d8a21b 45%, #166534 100%);
+            overflow: hidden;
+        }
+
+        .confidence-marker {
+            position: absolute;
+            top: -3px;
+            width: 4px;
+            height: 20px;
+            border-radius: 999px;
+            background: #ffffff;
+            box-shadow: 0 0 0 2px rgba(33, 27, 23, 0.25);
+        }
+
+        .decision-banner {
+            padding: 11px;
+            border-radius: 15px;
+            border: 1px solid rgba(88, 69, 51, 0.10);
+            background: rgba(255, 255, 255, 0.88);
+        }
+
+        .decision-banner.low {
+            background: rgba(180, 83, 9, 0.10);
+            border-color: rgba(180, 83, 9, 0.16);
+        }
+
+        .decision-banner.medium {
+            background: rgba(183, 121, 31, 0.10);
+            border-color: rgba(183, 121, 31, 0.16);
+        }
+
+        .decision-banner.high {
+            background: rgba(22, 101, 52, 0.10);
+            border-color: rgba(22, 101, 52, 0.16);
+        }
+
+        .empty {
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px dashed rgba(88, 69, 51, 0.14);
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--muted);
+            font-size: 0.76rem;
+        }
+
+        details {
+            border-radius: 14px;
+            border: 1px solid rgba(88, 69, 51, 0.08);
+            background: rgba(255, 255, 255, 0.72);
+            padding: 8px 10px;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.76rem;
+        }
+
+        @media (max-width: 1240px) {
+            .toolbar-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 760px) {
+            body {
+                padding: 0;
+            }
+
+            .shell {
+                border-radius: 0;
+            }
+
+            .hero,
+            .toolbar,
+            .pipeline-shell {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+
+            .toolbar-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pipeline {
+                grid-auto-flow: row;
+                grid-auto-columns: unset;
+                min-width: 100%;
+            }
+
+            .step::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <div class="shell">
+        <section class="hero">
+            <div class="hero-top">
+                <div>
+                    <h1>Document Pipeline Console</h1>
+                    <p class="subtitle">Une vue opérateur plein écran du pipeline PDF: extraction OCR, retrieval embedding top-N, score de confiance, décision BFF, arbitrage OpenAI éventuel, puis résultat métier final.</p>
+                </div>
+                <div class="hero-metrics">
+                    <span class="hero-pill">full-width pipeline</span>
+                    <span class="hero-pill">top-N confidence</span>
+                    <span class="hero-pill">low / medium / high gating</span>
+                </div>
+            </div>
+            <div class="tag-row">
+                <span class="tag warm">OCR explicable</span>
+                <span class="tag">retrieval top-10</span>
+                <span class="tag">arbitrage adaptatif</span>
+                <span class="tag">debug métier lisible</span>
+            </div>
+        </section>
+
+        <section class="toolbar">
+            <div class="toolbar-card">
+                <div class="toolbar-grid">
+                    <label>
+                        API Base URL
+                        <input id="apiBase" value="http://localhost:8080/api/ai">
+                    </label>
+                    <label>
+                        Stratégie
+                        <select id="pdfStrategy">
+                            <option value="basic">prompt-only</option>
+                            <option value="memory">memory</option>
+                            <option value="tools">tools</option>
+                            <option value="rag">rag</option>
+                            <option value="hybrid" selected>hybrid (embedding-service + OpenAI)</option>
+                        </select>
+                    </label>
+                    <label>
+                        Conversation ID
+                        <input id="conversationId" value="demo-001">
+                    </label>
+                    <div>
+                        <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Déposer un document PDF">
+                            <div class="dropzone-title" id="dropzoneTitle">Déposer un PDF ici</div>
+                            <div class="dropzone-copy" id="dropzoneCopy">Drag & drop pour lancer immédiatement. Cliquer pour sélectionner un fichier.</div>
+                        </div>
+                        <input class="file-input" id="pdfFile" type="file" accept="application/pdf,.pdf">
+                    </div>
+                    <button id="launchButton" type="button" onclick="classifyPdf()">Lancer</button>
+                </div>
+                <div class="toolbar-meta">
+                    <p>Le top-10 sert au score de confiance. Le top-3 est ensuite présenté au LLM uniquement si le mode de décision le permet.</p>
+                    <span id="pdfStatus" class="state-pill">Aucun PDF envoyé.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="pipeline-shell">
+            <div class="pipeline-scroll">
+                <section class="pipeline">
+                    <article class="step" id="step1Card">
+                        <div class="step-head">
+                            <div style="display:flex; gap:12px;">
+                                <span class="step-index">1</span>
+                                <div>
+                                    <h2 class="step-title">Extraction OCR / texte</h2>
+                                    <p class="step-copy">Affiche le mode de lecture, le texte brut transmis au pipeline et l’aperçu par page.</p>
+                                </div>
+                            </div>
+                            <span class="chip" id="step1Chip">INIT</span>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric"><span>Mode</span><strong id="metricMode">-</strong></div>
+                            <div class="metric"><span>Pages</span><strong id="metricPages">0</strong></div>
+                            <div class="metric"><span>Caractères</span><strong id="metricExtracted">0</strong></div>
+                            <div class="metric"><span>OCR</span><strong id="metricOcr">non</strong></div>
+                        </div>
+                        <div class="summary" id="step1Summary">Aucune extraction pour le moment.</div>
+                        <pre id="step1RawText">En attente...</pre>
+                        <div class="scroll-box" id="pagePreviews">
+                            <div class="empty">Aucune page extraite pour l'instant.</div>
+                        </div>
+                    </article>
+
+                    <article class="step" id="step2Card">
+                        <div class="step-head">
+                            <div style="display:flex; gap:12px;">
+                                <span class="step-index">2</span>
+                                <div>
+                                    <h2 class="step-title">Retrieval embedding top-N</h2>
+                                    <p class="step-copy">Le top-10 sert au diagnostic. Le top-3 est mis en évidence comme entrée potentielle du LLM.</p>
+                                </div>
+                            </div>
+                            <span class="chip" id="step2Chip">TOP-N</span>
+                        </div>
+                        <div class="summary" id="step2Summary">Aucun candidat sémantique récupéré.</div>
+                        <div class="scroll-box" id="step2Candidates">
+                            <div class="empty">En attente du retrieval.</div>
+                        </div>
+                    </article>
+
+                    <article class="step" id="step3Card">
+                        <div class="step-head">
+                            <div style="display:flex; gap:12px;">
+                                <span class="step-index">3</span>
+                                <div>
+                                    <h2 class="step-title">Score de confiance</h2>
+                                    <p class="step-copy">Synthèse visuelle de la qualité du retrieval avant tout arbitrage distant.</p>
+                                </div>
+                            </div>
+                            <span class="chip" id="confidenceChip">N/A</span>
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric"><span>Score</span><strong id="confidenceScore">0 / 100</strong></div>
+                            <div class="metric"><span>Niveau</span><strong id="confidenceLevel">N/A</strong></div>
+                            <div class="metric"><span>Gap12</span><strong id="confidenceGap">0.0000</strong></div>
+                            <div class="metric"><span>Spread</span><strong id="confidenceSpread">0.0000</strong></div>
+                            <div class="metric"><span>Majority ratio</span><strong id="confidenceMajority">0.00</strong></div>
+                            <div class="metric"><span>Décision cible</span><strong id="confidenceDecision">N/A</strong></div>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-marker" id="confidenceMarker" style="left: 0%;"></div>
+                        </div>
+                        <div class="summary" id="step3Summary">Aucun scoring disponible.</div>
+                        <details open>
+                            <summary>Détail pédagogique</summary>
+                            <pre id="step3Explanation">En attente...</pre>
+                        </details>
+                    </article>
+
+                    <article class="step" id="step4Card">
+                        <div class="step-head">
+                            <div style="display:flex; gap:12px;">
+                                <span class="step-index">4</span>
+                                <div>
+                                    <h2 class="step-title">Décision BFF</h2>
+                                    <p class="step-copy">Le BFF décide s’il faut appeler OpenAI, skipper, ou permettre une sortie `INCONNU`.</p>
+                                </div>
+                            </div>
+                            <span class="chip" id="decisionChip">N/A</span>
+                        </div>
+                        <div class="decision-banner" id="decisionBanner">
+                            <h3 id="decisionTitle">Décision en attente</h3>
+                            <p id="decisionText">Le mode de décision apparaîtra ici après le calcul du score.</p>
+                        </div>
+                        <div class="scroll-box">
+                            <article class="decision-rule">
+                                <h4>LOW_SKIP</h4>
+                                <p>Retrieval trop ambigu: aucun appel OpenAI, classification stoppée à coût nul côté LLM.</p>
+                            </article>
+                            <article class="decision-rule">
+                                <h4>MEDIUM_ADAPTIVE</h4>
+                                <p>Le top-3 est donné comme indice. OpenAI peut conclure `INCONNU` si aucun candidat ne colle au texte OCR.</p>
+                            </article>
+                            <article class="decision-rule">
+                                <h4>HIGH_CONSTRAINED</h4>
+                                <p>OpenAI arbitre strictement dans le top-3, avec priorité aux indices OCR purs.</p>
+                            </article>
+                        </div>
+                    </article>
+
+                    <article class="step" id="step5Card">
+                        <div class="step-head">
+                            <div style="display:flex; gap:12px;">
+                                <span class="step-index">5</span>
+                                <div>
+                                    <h2 class="step-title">Prompt OpenAI</h2>
+                                    <p class="step-copy">Prompt réellement transmis, ou indication claire que l’appel a été ignoré.</p>
+                                </div>
+                            </div>
+                            <span class="chip" id="promptChip">PROMPT</span>
+                        </div>
+                        <div class="summary" id="step5Summary">Aucun prompt final disponible.</div>
+                        <pre id="step5Prompt">En attente...</pre>
+                    </article>
+
+                    <article class="step" id="step6Card">
+                        <div class="step-head">
+                            <div style="display:flex; gap:12px;">
+                                <span class="step-index">6</span>
+                                <div>
+                                    <h2 class="step-title">Réponse LLM brute</h2>
+                                    <p class="step-copy">Réponse directe du modèle, ou message de skip si OpenAI n’a pas été appelé.</p>
+                                </div>
+                            </div>
+                            <span class="chip" id="rawChip">RAW</span>
+                        </div>
+                        <pre id="step6RawLlmResponse">En attente...</pre>
+                    </article>
+
+                    <article class="step" id="step7Card">
+                        <div class="step-head">
+                            <div style="display:flex; gap:12px;">
+                                <span class="step-index">7</span>
+                                <div>
+                                    <h2 class="step-title">Résultat métier final</h2>
+                                    <p class="step-copy">Réponse interprétée côté BFF, prête à être lue par un opérateur.</p>
+                                </div>
+                            </div>
+                            <span class="chip" id="resultChip">RESULT</span>
+                        </div>
+                        <div class="summary" id="step7Summary">Aucune classification pour le moment.</div>
+                        <pre id="step7UiSummary">En attente...</pre>
+                    </article>
+                </section>
+            </div>
+        </section>
+    </div>
+</main>
+<script>
+    let selectedFile = null;
+    let isProcessing = false;
+
+    function baseUrl() {
+        return document.getElementById('apiBase').value.replace(/\/$/, '');
+    }
+
+    function setStatus(text, stateClass) {
+        const node = document.getElementById('pdfStatus');
+        node.textContent = text;
+        node.className = `state-pill ${stateClass || ''}`.trim();
+    }
+
+    function updateUploaderState() {
+        const dropzone = document.getElementById('dropzone');
+        const launchButton = document.getElementById('launchButton');
+        dropzone.classList.toggle('is-disabled', isProcessing);
+        launchButton.disabled = isProcessing || !selectedFile;
+        document.getElementById('pdfFile').disabled = isProcessing;
+        document.getElementById('dropzoneTitle').textContent = selectedFile
+            ? `Fichier prêt: ${selectedFile.name}`
+            : 'Déposer un PDF ici';
+        document.getElementById('dropzoneCopy').textContent = isProcessing
+            ? 'Traitement en cours. Le dépôt est temporairement verrouillé.'
+            : (selectedFile
+                ? 'Cliquer sur Lancer ou déposer un autre PDF pour le remplacer.'
+                : 'Drag & drop pour lancer immédiatement. Cliquer pour sélectionner un fichier.');
+    }
+
+    function setSelectedFile(file) {
+        selectedFile = file || null;
+        updateUploaderState();
+    }
+
+    function initDropzone() {
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('pdfFile');
+
+        dropzone.addEventListener('click', () => {
+            if (!isProcessing) {
+                fileInput.click();
+            }
+        });
+
+        dropzone.addEventListener('keydown', event => {
+            if ((event.key === 'Enter' || event.key === ' ') && !isProcessing) {
+                event.preventDefault();
+                fileInput.click();
+            }
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, event => {
+                event.preventDefault();
+                if (!isProcessing) {
+                    dropzone.classList.add('is-dragover');
+                }
+            });
+        });
+
+        ['dragleave', 'dragend', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, event => {
+                event.preventDefault();
+                dropzone.classList.remove('is-dragover');
+            });
+        });
+
+        dropzone.addEventListener('drop', event => {
+            if (isProcessing) {
+                return;
+            }
+            const file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
+            if (!file) {
+                return;
+            }
+            setSelectedFile(file);
+            classifyPdf(file);
+        });
+
+        fileInput.addEventListener('change', event => {
+            const file = event.target.files && event.target.files[0] ? event.target.files[0] : null;
+            setSelectedFile(file);
+        });
+
+        updateUploaderState();
+    }
+
+    async function classifyPdf(fileOverride) {
+        const file = fileOverride || selectedFile || document.getElementById('pdfFile').files[0];
+        if (!file) {
+            setStatus('Sélectionne un PDF avant de lancer la classification.', 'state-error');
+            return;
+        }
+        if (isProcessing) {
+            return;
+        }
+
+        setSelectedFile(file);
+        isProcessing = true;
+        updateUploaderState();
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('strategy', document.getElementById('pdfStrategy').value);
+        formData.append('conversationId', document.getElementById('conversationId').value);
+
+        setStatus(`Traitement en cours: ${file.name}`, 'state-running');
+
+        try {
+            const response = await fetch(`${baseUrl()}/route-document/pdf`, {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            renderPdfResult(result, response.ok);
+            setStatus(response.ok ? `Succès: ${file.name}` : `Erreur HTTP ${response.status}`, response.ok ? 'state-success' : 'state-error');
+        } catch (error) {
+            setStatus(`Erreur réseau: ${error.message}`, 'state-error');
+        } finally {
+            isProcessing = false;
+            updateUploaderState();
+        }
+    }
+
+    function renderPdfResult(result, ok) {
+        if (!ok) {
+            document.getElementById('step7UiSummary').textContent = JSON.stringify(result, null, 2);
+            document.getElementById('step7Summary').textContent = 'La requête a échoué côté backend.';
+            document.getElementById('step6RawLlmResponse').textContent = JSON.stringify(result, null, 2);
+            return;
+        }
+
+        renderExtraction(result);
+        renderCandidates(result);
+        renderConfidence(result);
+        renderDecision(result);
+        renderPrompt(result);
+        renderRawResponse(result);
+        renderFinalResult(result);
+    }
+
+    function renderExtraction(result) {
+        const ocrAttempted = !!result.ocrAttempted;
+        const ocrSucceeded = !!result.ocrSucceeded;
+        document.getElementById('metricMode').textContent = result.extractionMode || 'UNKNOWN';
+        document.getElementById('metricPages').textContent = result.pageCount ?? 0;
+        document.getElementById('metricExtracted').textContent = result.extractedTextLength ?? 0;
+        document.getElementById('metricOcr').textContent = ocrAttempted ? (ocrSucceeded ? 'oui' : 'échec') : 'non';
+        document.getElementById('step1Summary').textContent = result.extractionDiagnostic || 'Aucun diagnostic d\'extraction.';
+        document.getElementById('step1RawText').textContent = result.extractedTextPreview || 'Aucun texte extrait.';
+        document.getElementById('step1Chip').textContent = result.extractionMode || 'STEP 1';
+
+        const pages = result.pagePreviews || [];
+        const pageContainer = document.getElementById('pagePreviews');
+        if (!pages.length) {
+            pageContainer.innerHTML = '<div class="empty">Aucune page extraite.</div>';
+            return;
+        }
+
+        pageContainer.innerHTML = pages.map(page => `
+            <article class="page">
+                <h4>Page ${page.pageNumber} · ${page.characterCount} caractères</h4>
+                <p>${escapeHtml(page.preview || '')}</p>
+            </article>
+        `).join('');
+    }
+
+    function renderCandidates(result) {
+        const candidates = parseCandidateLines(result.candidateTypologyHints || '');
+        document.getElementById('step2Summary').textContent = candidates.length
+            ? `${candidates.length} candidat(s) affiché(s). Le top-3 est visuellement mis en avant.`
+            : 'Aucun candidat sémantique récupéré.';
+
+        const container = document.getElementById('step2Candidates');
+        if (!candidates.length) {
+            container.innerHTML = '<div class="empty">Aucun candidat sémantique.</div>';
+            return;
+        }
+
+        container.innerHTML = candidates.map((line, index) => {
+            const rank = index + 1;
+            const isTop3 = rank <= 3;
+            const parts = line.replace(/^-\s*/, '').split('|').map(part => part.trim());
+            return `
+                <article class="candidate-row ${isTop3 ? 'top3' : ''}">
+                    <h4>#${rank} ${escapeHtml(parts[0] || 'Typologie')}</h4>
+                    <div class="candidate-meta">
+                        <span>${escapeHtml(parts[1] || '')}</span>
+                        <span>${escapeHtml(parts[2] || '')}</span>
+                    </div>
+                    <p>${escapeHtml(parts.slice(3).join(' | ') || 'Aucun détail')}</p>
+                </article>
+            `;
+        }).join('');
+    }
+
+    function renderConfidence(result) {
+        const score = Number(result.retrievalConfidenceScore || 0);
+        const level = (result.retrievalConfidenceLevel || 'N/A').toUpperCase();
+        const explanation = result.retrievalConfidenceExplanation || 'Aucune explication disponible.';
+        const decisionMode = result.hybridDecisionMode || 'N/A';
+        const gap = Number(result.retrievalGap12 || 0);
+        const spread = Number(result.retrievalSpread || 0);
+        const majority = Number(result.retrievalMajorityRatio || 0);
+
+        document.getElementById('confidenceScore').textContent = `${score} / 100`;
+        document.getElementById('confidenceLevel').textContent = level;
+        document.getElementById('confidenceGap').textContent = gap.toFixed(4);
+        document.getElementById('confidenceSpread').textContent = spread.toFixed(4);
+        document.getElementById('confidenceMajority').textContent = majority.toFixed(2);
+        document.getElementById('confidenceDecision').textContent = decisionMode;
+        document.getElementById('step3Summary').textContent = level === 'N/A'
+            ? 'Aucun scoring disponible pour cette stratégie.'
+            : `Score ${score}/100, niveau ${level}. Ce score oriente la décision BFF avant tout appel OpenAI.`;
+        document.getElementById('step3Explanation').textContent = explanation;
+
+        const chip = document.getElementById('confidenceChip');
+        chip.textContent = level;
+        chip.className = `chip ${level.toLowerCase()}`.trim();
+        document.getElementById('confidenceMarker').style.left = `${Math.max(0, Math.min(score, 100))}%`;
+    }
+
+    function renderDecision(result) {
+        const decisionMode = result.hybridDecisionMode || 'N/A';
+        const level = (result.retrievalConfidenceLevel || 'N/A').toLowerCase();
+        const banner = document.getElementById('decisionBanner');
+        const chip = document.getElementById('decisionChip');
+        banner.className = `decision-banner ${level}`.trim();
+        chip.textContent = decisionMode;
+        chip.className = `chip ${level}`.trim();
+
+        const title = document.getElementById('decisionTitle');
+        const text = document.getElementById('decisionText');
+        if (decisionMode === 'LOW_SKIP') {
+            title.textContent = 'OpenAI est volontairement ignoré';
+            text.textContent = 'Le retrieval est jugé trop ambigu. Le BFF retourne INCONNU et recommande d’enrichir le référentiel vectoriel.';
+        } else if (decisionMode === 'MEDIUM_ADAPTIVE') {
+            title.textContent = 'OpenAI reçoit un prompt adaptatif';
+            text.textContent = 'Le top-3 sert d’indice. Le LLM peut conclure INCONNU si aucun candidat ne colle au texte OCR.';
+        } else if (decisionMode === 'HIGH_CONSTRAINED') {
+            title.textContent = 'OpenAI est contraint au top-3';
+            text.textContent = 'Le retrieval est jugé assez fiable pour demander un arbitrage strict parmi les trois candidats remontés.';
+        } else {
+            title.textContent = 'Décision indisponible';
+            text.textContent = 'La stratégie courante ne fournit pas de mode de décision hybride.';
+        }
+    }
+
+    function renderPrompt(result) {
+        const skipped = (result.hybridDecisionMode || '').includes('LOW_SKIP') || String(result.llmRawResponse || '').includes('LLM skipped');
+        document.getElementById('step5Summary').textContent = skipped
+            ? 'Aucun prompt OpenAI envoyé: le BFF a stoppé le flux au vu du score de confiance.'
+            : 'Prompt final transmis à OpenAI pour arbitrage.';
+        document.getElementById('step5Prompt').textContent = result.finalPromptPreview || 'Aucun prompt final disponible.';
+        const chip = document.getElementById('promptChip');
+        chip.textContent = skipped ? 'SKIPPED' : 'PROMPT';
+        chip.className = `chip ${(result.retrievalConfidenceLevel || 'n/a').toLowerCase()}`.trim();
+        document.getElementById('step5Card').classList.toggle('status-skipped', skipped);
+    }
+
+    function renderRawResponse(result) {
+        document.getElementById('step6RawLlmResponse').textContent = result.llmRawResponse || 'Aucune réponse brute disponible.';
+    }
+
+    function renderFinalResult(result) {
+        const routing = result.routing || {};
+        document.getElementById('step7Summary').textContent = routing.typologyCode
+            ? `Document reconnu: ${routing.documentType || 'INCONNU'} (${routing.typologyCode}).`
+            : 'Document non reconnu.';
+        document.getElementById('step7UiSummary').textContent = buildUiSummary(result.fileName, routing, result.strategy, result.hybridDecisionMode);
+        const chip = document.getElementById('resultChip');
+        chip.textContent = routing.typologyCode || 'INCONNU';
+    }
+
+    function buildUiSummary(fileName, routing, strategy, decisionMode) {
+        return [
+            `Fichier: ${fileName || 'document.pdf'}`,
+            `Stratégie utilisée: ${strategy || 'inconnue'}`,
+            `Mode de décision BFF: ${decisionMode || 'N/A'}`,
+            `Type de document reconnu: ${routing.documentType || 'INCONNU'}`,
+            `Typologie retenue: ${routing.typologyCode || 'INCONNU'}`,
+            `Fonds retenu: ${routing.fundCode || 'INCONNU'}`,
+            `Justification: ${routing.rationale || 'Aucune justification.'}`,
+            `Conseil tokens: ${routing.tokenAdvice || 'Aucun conseil.'}`
+        ].join('\n');
+    }
+
+    function parseCandidateLines(text) {
+        return text
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.startsWith('- '));
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;');
+    }
+
+    initDropzone();
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+spring:
+  profiles:
+    default: openai
+  application:
+    name: bff-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres=
+    driver-class-name: org.postgresql.Driver
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o-mini
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: mistral
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+app:
+  ocr:
+    tesseract:
+      enabled: true
+      language: fra
+      data-path: ${TESSDATA_PATH:}
+
+  embedding-service:
+    base-url: ${EMBEDDING_SERVICE_URL:http://localhost:8090/api}
